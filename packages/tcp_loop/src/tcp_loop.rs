@@ -1,20 +1,20 @@
-use io_uring::{opcode, types, IoUring};
+use crate::utils::{prepend_string, submit_accept, submit_recv, submit_send};
+use io_uring::IoUring;
 use std::error::Error;
 use std::net::TcpListener;
 use std::os::fd::{AsRawFd, RawFd};
-use std::ptr;
 
-enum State {
+pub enum State {
     Accept,
     Recv,
     Send,
     Closed,
 }
 
-struct Connection {
-    id: usize,
-    state: State,
-    fd_conn: RawFd,
+pub struct Connection {
+    pub id: usize,
+    pub state: State,
+    pub fd_conn: RawFd,
 }
 
 pub fn tcp_loop(ring: IoUring) -> Result<(), Box<dyn Error>> {
@@ -77,74 +77,4 @@ pub fn tcp_loop(ring: IoUring) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-fn submit_accept(ring: &mut IoUring, tcp_socket: RawFd, connections: &mut Vec<Connection>) {
-    let id = connections.len();
-    connections.push(Connection {
-        id,
-        state: State::Accept,
-        fd_conn: 0,
-    });
-
-    let accept = opcode::Accept::new(types::Fd(tcp_socket), ptr::null_mut(), ptr::null_mut())
-        .build()
-        .user_data(id as u64);
-
-    unsafe {
-        ring.submission()
-            .push(&accept)
-            .expect("submission queue is full");
-    }
-}
-
-fn submit_recv(ring: &mut IoUring, request: &mut Connection, buf: &mut Vec<u8>) {
-    let read_e = opcode::Recv::new(
-        types::Fd(request.fd_conn),
-        buf.as_mut_ptr(),
-        buf.len() as u32,
-    )
-    .build()
-    .user_data(request.id as u64);
-
-    request.state = State::Recv;
-
-    unsafe {
-        ring.submission()
-            .push(&read_e)
-            .expect("submission queue is full");
-    }
-}
-
-fn submit_send(ring: &mut IoUring, connection: &mut Connection, buf: &mut Vec<u8>) {
-    let read_e = opcode::Send::new(
-        types::Fd(connection.fd_conn),
-        buf.as_mut_ptr(),
-        buf.len() as u32,
-    )
-    .build()
-    .user_data(connection.id as u64);
-
-    connection.state = State::Send;
-
-    unsafe {
-        ring.submission()
-            .push(&read_e)
-            .expect("submission queue is full");
-    }
-}
-
-fn prepend_string(vec: &mut Vec<u8>, len: usize) {
-    let msg = "Hello \"".as_bytes();
-    let msg_len = msg.len();
-    for i in (0..len).rev() {
-        vec[i + msg_len] = vec[i];
-    }
-    for i in 0..msg_len {
-        vec[i] = msg[i];
-    }
-
-    vec[len + msg_len - 1] = '\"' as u8;
-    vec[len + msg_len] = '!' as u8;
-    vec[len + msg_len + 1] = '\n' as u8;
 }

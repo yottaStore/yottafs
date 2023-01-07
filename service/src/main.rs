@@ -1,11 +1,9 @@
-mod tcp_loop;
-
 use clap::Parser;
 use config::config::parse_config;
 use std::error::Error;
 
 use io_uring::IoUring;
-use tcp_loop::tcp_loop;
+use tcp_loop::tcp_loop::tcp_loop;
 
 #[derive(Parser)]
 struct CliArgs {

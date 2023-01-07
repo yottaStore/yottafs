@@ -3,7 +3,7 @@ members = [
     "bench",
     "client",
     "e2e",
-    "drivers/*",
+    "io_drivers/*",
     "packages/*",
     "service",
 ]
