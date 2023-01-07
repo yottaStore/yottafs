@@ -1,8 +1,3 @@
-[package]
-name = "yottafs"
-version = "0.1.0"
-edition = "2021"
-
 [workspace]
 members = [
     "bench",
@@ -10,9 +5,6 @@ members = [
     "e2e",
     "drivers/*",
     "packages/*",
-    "services/*",
+    "service",
 ]
 
-[dependencies]
-config = { path = "./packages/config" }
-clap = { version = "4.0.32", features = ["derive"] }
