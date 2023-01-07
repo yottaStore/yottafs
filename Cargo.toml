@@ -1,10 +1,8 @@
 [workspace]
 members = [
-    "bench",
     "client",
-    "e2e",
-    "io_drivers/*",
     "packages/*",
     "service",
+    "tests/*",
 ]
 

@@ -1,32 +1,50 @@
 use clap::Parser;
 use config::config::parse_config;
-use std::error::Error;
 
 use io_uring::IoUring;
 use tcp_loop::tcp_loop::tcp_loop;
 
 #[derive(Parser)]
-struct CliArgs {
-    #[arg(default_value = "/home/mamluk/Projects/yotta/yottafs/e2e/config.json")]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, help = "Path to the config file")]
     config_path: String,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    println!("Starting yottafs...");
-
+fn main() {
     // Parse cli
-    let args = CliArgs::parse();
+    let args = Args::parse();
 
     // Parse config
-    let ca = parse_config(&args.config_path).unwrap();
+    let conf = match parse_config(&args.config_path) {
+        Ok(ca) => ca,
+        Err(err) => {
+            println!("Error parsing config: {}", err.message);
+            return;
+        }
+    };
 
-    println!("{:?}", ca);
+    println!("{:?}", conf);
+
+    println!("Starting yottafs...");
 
     // Init io driver
 
     // Start service
 
-    let ring = IoUring::new(128)?;
+    let ring = match IoUring::new(128) {
+        Ok(ring) => ring,
+        Err(err) => {
+            println!("Error creating io_uring: {}", err);
+            return;
+        }
+    };
 
-    tcp_loop(ring)
+    // Pick a loop
+    let event_loop = tcp_loop;
+
+    match event_loop(ring) {
+        Ok(_) => println!("event loop exited successfully"),
+        Err(err) => println!("event loop exited with error: {}", err),
+    }
 }

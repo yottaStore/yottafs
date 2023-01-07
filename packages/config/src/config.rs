@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
@@ -16,10 +15,31 @@ pub struct Config {
     pub devices: Vec<Device>,
 }
 
-pub fn parse_config(path: &str) -> Result<Config, Box<dyn Error>> {
+#[derive(Debug)]
+pub struct ConfigError {
+    pub message: String,
+}
+
+pub fn parse_config(path: &str) -> Result<Config, ConfigError> {
     let json_file_path = Path::new(path);
-    let file = File::open(json_file_path)?;
-    let config: Config = serde_json::from_reader(file)?;
+
+    let file = match File::open(json_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(ConfigError {
+                message: format!("Error opening config file: {}", err),
+            });
+        }
+    };
+
+    let config = match serde_json::from_reader(file) {
+        Ok(config) => config,
+        Err(err) => {
+            return Err(ConfigError {
+                message: format!("Error parsing config file: {}", err),
+            });
+        }
+    };
 
     Ok(config)
 }
