@@ -23,6 +23,10 @@ pub fn submit_accept(ring: &mut IoUring, tcp_socket: RawFd, connections: &mut Ve
 }
 
 pub fn submit_recv(ring: &mut IoUring, request: &mut Connection, buf: &mut Vec<u8>) {
+    for item in &mut buf[..] {
+        *item = 0;
+    }
+
     let read_e = opcode::Recv::new(
         types::Fd(request.fd_conn),
         buf.as_mut_ptr(),

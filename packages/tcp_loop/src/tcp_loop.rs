@@ -4,6 +4,7 @@ use std::error::Error;
 use std::net::TcpListener;
 use std::os::fd::{AsRawFd, RawFd};
 
+#[derive(Debug)]
 pub enum State {
     Accept,
     Recv,
@@ -11,6 +12,7 @@ pub enum State {
     Closed,
 }
 
+#[derive(Debug)]
 pub struct Connection {
     pub id: usize,
     pub state: State,
@@ -35,6 +37,10 @@ pub fn tcp_loop(ring: IoUring) -> Result<(), Box<dyn Error>> {
 
         let id = cqe.user_data() as usize;
         let connection = connections.get_mut(id).unwrap();
+        println!("connection: {:?}", connection);
+        if cqe.result() == 0 {
+            connection.state = State::Closed;
+        }
         match connection.state {
             State::Accept => {
                 let fd_conn = cqe.result();
@@ -71,6 +77,7 @@ pub fn tcp_loop(ring: IoUring) -> Result<(), Box<dyn Error>> {
                 submit_recv(&mut ring, &mut connections[id], &mut buffs[id]);
             }
             State::Closed => unsafe {
+                println!("closing fd: {}", connection.fd_conn);
                 libc::close(connection.fd_conn);
             },
         }
