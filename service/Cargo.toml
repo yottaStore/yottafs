@@ -1,0 +1,15 @@
+[package]
+name = "service"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+config = { path = "../packages/config" }
+tcp_loop = { path = "../packages/tcp_loop" }
+
+clap = { version = "4.0.32", features = ["derive"] }
+io-uring = "*"
+libc = "*"
+slab = "*"
