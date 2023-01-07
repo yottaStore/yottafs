@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "bench",
+    "client",
+    "e2e",
+    "drivers/*",
+    "packages/*",
+    "services/*",
+]
+
