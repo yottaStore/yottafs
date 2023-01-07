@@ -1,0 +1,1 @@
+use config::config::parse_config;use clap::Parser;#[derive(Parser)]struct CliArgs {    config_path: String,}fn main() {    println!("Starting yottafs...");    // Parse cli    let args = CliArgs::parse();    // Parse config    let ca = parse_config(&args.config_path).unwrap();    println!("{:?}", ca);    // Init io driver    // Start service}

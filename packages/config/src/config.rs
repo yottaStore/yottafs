@@ -21,5 +21,5 @@ pub fn parse_config(path: &str) -> Result<Config, Box<dyn Error>> {
     let file = File::open(json_file_path)?;
     let config: Config = serde_json::from_reader(file)?;
 
-    return Ok(config);
+    Ok(config)
 }
