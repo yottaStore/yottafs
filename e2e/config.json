@@ -1,6 +1,11 @@
 {
   "hostname": "hello.world.com",
-  "devices": [{
-    "path": "/dev/nvme0n1"
-  }]
+  "devices": [
+    {
+      "path": "/dev/nvme0n1"
+    },
+    {
+      "path": "/dev/nvme0n2"
+    }
+  ]
 }
